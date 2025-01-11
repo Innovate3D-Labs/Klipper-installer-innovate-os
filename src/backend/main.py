@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from .api import printer_routes, install_routes
+from .api import printer_routes, install_routes, interface_routes
 
 app = FastAPI(title="Klipper Installer API")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 # Include routers
 app.include_router(printer_routes.router, prefix="/api/v1")
 app.include_router(install_routes.router, prefix="/api/v1")
+app.include_router(interface_routes.router, prefix="/api/v1")
 
 # API Routes werden später hinzugefügt
 @app.get("/")
