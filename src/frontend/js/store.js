@@ -5,7 +5,7 @@ export default createStore({
     printers: [],
     selectedPrinter: null,
     installationStatus: null,
-    currentInterface: null
+    currentWebInterface: null
   },
   mutations: {
     setPrinters(state, printers) {
@@ -17,8 +17,8 @@ export default createStore({
     setInstallationStatus(state, status) {
       state.installationStatus = status
     },
-    setCurrentInterface(state, interface) {
-      state.currentInterface = interface
+    setCurrentWebInterface(state, webInterface) {
+      state.currentWebInterface = webInterface
     }
   },
   actions: {
@@ -48,20 +48,21 @@ export default createStore({
         })
       }
     },
-    async switchInterface({ commit }, interface) {
+    async switchWebInterface({ commit }, webInterface) {
       try {
         const response = await fetch('/api/v1/interfaces/switch', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ interface })
+          body: JSON.stringify({ interface: webInterface })
         })
         if (response.ok) {
-          commit('setCurrentInterface', interface)
+          commit('setCurrentWebInterface', webInterface)
         }
       } catch (error) {
         console.error('Fehler beim Wechseln der Oberfläche:', error)
+        throw error
       }
     }
   }

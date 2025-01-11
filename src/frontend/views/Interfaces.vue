@@ -16,12 +16,18 @@
           @click="switchTo('fluidd')"
           :class="[
             'w-full py-2 px-4 rounded',
-            currentInterface === 'fluidd'
+            currentWebInterface === 'fluidd'
               ? 'bg-green-600 text-white'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           ]"
+          :disabled="isLoading"
         >
-          {{ currentInterface === 'fluidd' ? 'Aktiv' : 'Aktivieren' }}
+          <span v-if="isLoading && pendingInterface === 'fluidd'">
+            Wird aktiviert...
+          </span>
+          <span v-else>
+            {{ currentWebInterface === 'fluidd' ? 'Aktiv' : 'Aktivieren' }}
+          </span>
         </button>
       </div>
 
@@ -38,12 +44,18 @@
           @click="switchTo('mainsail')"
           :class="[
             'w-full py-2 px-4 rounded',
-            currentInterface === 'mainsail'
+            currentWebInterface === 'mainsail'
               ? 'bg-green-600 text-white'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           ]"
+          :disabled="isLoading"
         >
-          {{ currentInterface === 'mainsail' ? 'Aktiv' : 'Aktivieren' }}
+          <span v-if="isLoading && pendingInterface === 'mainsail'">
+            Wird aktiviert...
+          </span>
+          <span v-else>
+            {{ currentWebInterface === 'mainsail' ? 'Aktiv' : 'Aktivieren' }}
+          </span>
         </button>
       </div>
     </div>
@@ -68,26 +80,36 @@ export default {
   name: 'Interfaces',
   data() {
     return {
-      statusMessage: null
+      statusMessage: null,
+      isLoading: false,
+      pendingInterface: null
     }
   },
   computed: {
-    ...mapState(['currentInterface'])
+    ...mapState(['currentWebInterface'])
   },
   methods: {
-    ...mapActions(['switchInterface']),
-    async switchTo(interface) {
+    ...mapActions(['switchWebInterface']),
+    async switchTo(webInterface) {
+      if (this.isLoading || webInterface === this.currentWebInterface) return
+
+      this.isLoading = true
+      this.pendingInterface = webInterface
+      
       try {
-        await this.switchInterface(interface)
+        await this.switchWebInterface(webInterface)
         this.statusMessage = {
           type: 'success',
-          text: `Erfolgreich zu ${interface} gewechselt`
+          text: `Erfolgreich zu ${webInterface} gewechselt`
         }
       } catch (error) {
         this.statusMessage = {
           type: 'error',
-          text: `Fehler beim Wechsel zu ${interface}`
+          text: `Fehler beim Wechsel zu ${webInterface}: ${error.message}`
         }
+      } finally {
+        this.isLoading = false
+        this.pendingInterface = null
       }
       
       setTimeout(() => {
