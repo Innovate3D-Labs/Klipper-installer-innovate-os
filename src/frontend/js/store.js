@@ -1,7 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
-import settings from '../store/modules/settings'
-import websocket from '../store/modules/websocket'
+import settings from '../../store/modules/settings'
+import websocket from '../../store/modules/websocket'
 
 export default createStore({
   state: {
