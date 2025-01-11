@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from .api import printer_routes, install_routes, interface_routes
 
 app = FastAPI(title="Klipper Installer API")
@@ -19,10 +21,13 @@ app.include_router(printer_routes.router, prefix="/api/v1")
 app.include_router(install_routes.router, prefix="/api/v1")
 app.include_router(interface_routes.router, prefix="/api/v1")
 
+# Serve static files from dist directory
+app.mount("/assets", StaticFiles(directory="../dist/assets"), name="static")
+
 # API Routes werden später hinzugefügt
 @app.get("/")
 async def root():
-    return {"message": "Willkommen beim Klipper Installer API"}
+    return FileResponse("../dist/index.html")
 
 if __name__ == "__main__":
     import uvicorn
