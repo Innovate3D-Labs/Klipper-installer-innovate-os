@@ -1,0 +1,70 @@
+{
+    "ender3": {
+        "name": "Ender 3",
+        "manufacturer": "Creality",
+        "type": "cartesian",
+        "build_volume": {
+            "x": 235,
+            "y": 235,
+            "z": 250
+        },
+        "features": [
+            "Heated Bed",
+            "LCD Display",
+            "SD Card"
+        ],
+        "description": "Ein beliebter Einsteiger 3D-Drucker mit gutem Preis-Leistungs-Verhältnis.",
+        "mcu": "STM32F103",
+        "recommended_settings": {
+            "max_velocity": 300,
+            "max_accel": 3000,
+            "max_z_velocity": 5
+        }
+    },
+    "voron_trident": {
+        "name": "Voron Trident",
+        "manufacturer": "Voron Design",
+        "type": "corexy",
+        "build_volume": {
+            "x": 300,
+            "y": 300,
+            "z": 250
+        },
+        "features": [
+            "Triple Z-Axis",
+            "Heated Chamber",
+            "High Speed",
+            "LCD Display"
+        ],
+        "description": "Ein High-End CoreXY 3D-Drucker mit drei Z-Achsen für präzisen Druck bei hohen Geschwindigkeiten.",
+        "mcu": "STM32F446",
+        "recommended_settings": {
+            "max_velocity": 300,
+            "max_accel": 3000,
+            "max_z_velocity": 15
+        }
+    },
+    "ratrig_vcore3": {
+        "name": "RatRig V-Core 3",
+        "manufacturer": "RatRig",
+        "type": "corexy",
+        "build_volume": {
+            "x": 300,
+            "y": 300,
+            "z": 300
+        },
+        "features": [
+            "CoreXY",
+            "Linear Rails",
+            "High Speed",
+            "LCD Display"
+        ],
+        "description": "Ein modularer CoreXY 3D-Drucker mit hoher Präzision und Geschwindigkeit.",
+        "mcu": "STM32F446",
+        "recommended_settings": {
+            "max_velocity": 500,
+            "max_accel": 5000,
+            "max_z_velocity": 15
+        }
+    }
+}
