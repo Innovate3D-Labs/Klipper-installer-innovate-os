@@ -4,19 +4,16 @@ Ein einfacher Installer für Klipper auf deinem 3D-Drucker.
 
 ## Installation
 
-1. Lade das neueste Release herunter:
+1. Repository klonen:
 ```bash
-wget https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os/releases/latest/download/klipper-installer.sh
+git clone https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os.git
+cd Klipper-installer-innovate-os
 ```
 
-2. Mache das Script ausführbar:
+2. Installer starten:
 ```bash
-chmod +x klipper-installer.sh
-```
-
-3. Führe den Installer aus:
-```bash
-./klipper-installer.sh
+chmod +x start.sh
+./start.sh
 ```
 
 ## Verwendung
