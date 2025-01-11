@@ -7,7 +7,7 @@ class PrinterBase(BaseModel):
     manufacturer: str = Field(..., description="Hersteller des Druckers")
     type: str = Field(..., description="Typ des Druckers (z.B. Cartesian, CoreXY)")
     build_volume: Dict[str, int] = Field(..., description="Bauvolumen in mm (x, y, z)")
-    features: List[str] = Field(default_list, description="Liste der Funktionen")
+    features: List[str] = Field(default_factory=list, description="Liste der Funktionen")
     description: Optional[str] = Field(None, description="Beschreibung des Druckers")
     mcu_type: Optional[str] = Field(None, description="Typ des Mikrocontrollers")
 
