@@ -3,8 +3,12 @@
 # Aktiviere die Python-Umgebung
 source venv/bin/activate
 
-# Wechsle in das src Verzeichnis
-cd src
+# Installiere npm Abhängigkeiten und baue das Frontend
+echo "Baue das Frontend..."
+npm install
+npm run build
 
-# Starte den Server
-python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --app-dir .
+# Starte den Backend-Server
+echo "Starte den Backend-Server..."
+cd src
+python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
