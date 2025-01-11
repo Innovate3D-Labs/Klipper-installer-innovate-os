@@ -10,7 +10,19 @@ git clone https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os.git
 cd Klipper-installer-innovate-os
 ```
 
-2. Installer starten:
+2. Abhängigkeiten installieren:
+```bash
+# System-Pakete installieren
+sudo apt-get update
+sudo apt-get install -y python3-pip python3-venv nginx
+
+# Python-Umgebung einrichten
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+3. Installer starten:
 ```bash
 chmod +x start.sh
 ./start.sh
@@ -37,6 +49,12 @@ http://localhost:8000
 - (weitere folgen)
 
 ## Probleme?
+
+### Python-Fehler oder "command not found"
+```bash
+# Aktiviere die Python-Umgebung
+source venv/bin/activate
+```
 
 ### USB-Port nicht gefunden
 ```bash
