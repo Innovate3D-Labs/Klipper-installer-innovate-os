@@ -6,7 +6,7 @@ Ein einfacher Installer für Klipper auf deinem 3D-Drucker.
 
 1. Lade das neueste Release herunter:
 ```bash
-wget https://github.com/your-username/Klipper-installer-innovate-os/releases/latest/download/klipper-installer.sh
+wget https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os/releases/latest/download/klipper-installer.sh
 ```
 
 2. Mache das Script ausführbar:
