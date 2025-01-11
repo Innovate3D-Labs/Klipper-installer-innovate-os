@@ -1,7 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
-import settings from './store/modules/settings'
-import websocket from './store/modules/websocket'
+import settings from '../store/modules/settings'
+import websocket from '../store/modules/websocket'
 
 export default createStore({
   state: {
@@ -21,7 +21,6 @@ export default createStore({
       installation: false
     }
   },
-
   mutations: {
     setCurrentWebInterface(state, webInterface) {
       state.currentWebInterface = webInterface
@@ -54,29 +53,27 @@ export default createStore({
       state.loading[key] = value
     }
   },
-
   actions: {
     showError({ commit }, { message, details }) {
-      commit('setError', { message, details })
-      setTimeout(() => {
-        commit('clearError')
-      }, 5000)
+      commit('setError', {
+        message,
+        details
+      })
+      setTimeout(() => commit('clearError'), 5000)
     },
 
     showSuccess({ commit }, message) {
       commit('setSuccess', message)
-      setTimeout(() => {
-        commit('clearSuccess')
-      }, 3000)
+      setTimeout(() => commit('clearSuccess'), 5000)
     },
 
     async fetchPrinters({ commit }) {
       commit('setLoading', { key: 'printers', value: true })
       try {
-        const response = await axios.get('/api/printers')
+        const response = await axios.get('/api/v1/printers')
         commit('setPrinters', response.data)
       } catch (error) {
-        commit('setError', {
+        commit('showError', {
           message: 'Fehler beim Laden der Drucker',
           details: error.message
         })
@@ -87,69 +84,66 @@ export default createStore({
 
     async createPrinter({ commit, dispatch }, printerData) {
       try {
-        await axios.post('/api/printers', printerData)
+        await axios.post('/api/v1/printers', printerData)
+        dispatch('showSuccess', 'Drucker erfolgreich erstellt')
         dispatch('fetchPrinters')
       } catch (error) {
-        commit('setError', {
+        dispatch('showError', {
           message: 'Fehler beim Erstellen des Druckers',
           details: error.message
         })
-        throw error
       }
     },
 
     async updatePrinter({ commit, dispatch }, { id, data }) {
       try {
-        await axios.put(`/api/printers/${id}`, data)
+        await axios.put(`/api/v1/printers/${id}`, data)
+        dispatch('showSuccess', 'Drucker erfolgreich aktualisiert')
         dispatch('fetchPrinters')
       } catch (error) {
-        commit('setError', {
+        dispatch('showError', {
           message: 'Fehler beim Aktualisieren des Druckers',
           details: error.message
         })
-        throw error
       }
     },
 
     async deletePrinter({ commit, dispatch }, id) {
       try {
-        await axios.delete(`/api/printers/${id}`)
+        await axios.delete(`/api/v1/printers/${id}`)
+        dispatch('showSuccess', 'Drucker erfolgreich gelöscht')
         dispatch('fetchPrinters')
       } catch (error) {
-        commit('setError', {
+        dispatch('showError', {
           message: 'Fehler beim Löschen des Druckers',
           details: error.message
         })
-        throw error
       }
     },
 
     async switchWebInterface({ commit }, webInterfaceName) {
+      commit('setLoading', { key: 'interfaces', value: true })
       try {
-        const response = await axios.post('/api/interface/switch', {
+        const response = await axios.post('/api/v1/interface/switch', {
           interface: webInterfaceName
         })
-        if (response.data.success) {
-          commit('setCurrentWebInterface', webInterfaceName)
-        }
+        commit('setCurrentWebInterface', webInterfaceName)
+        return response.data
       } catch (error) {
-        commit('setError', {
-          message: 'Fehler beim Wechseln des Interfaces',
-          details: error.message
-        })
         throw error
+      } finally {
+        commit('setLoading', { key: 'interfaces', value: false })
       }
     },
 
     async getCurrentWebInterface({ commit }) {
       try {
-        const response = await axios.get('/api/interface/current')
+        const response = await axios.get('/api/v1/interface/current')
         commit('setCurrentWebInterface', response.data.interface)
+        return response.data
       } catch (error) {
-        commit('setError', {
-          message: 'Fehler beim Laden des aktuellen Interfaces',
-          details: error.message
-        })
+        console.error('Fehler beim Abrufen der aktuellen Web-Oberfläche:', error)
+        throw error
       }
     }
   },
@@ -157,13 +151,5 @@ export default createStore({
   modules: {
     settings,
     websocket
-  },
-
-  getters: {
-    installationProgress: state => state.installationStatus.progress,
-    isInstalling: state => state.installationStatus.step !== null,
-    availablePrinters: state => state.printers,
-    selectedPrinterConfig: state => state.selectedPrinter?.config || null,
-    isLoading: state => key => state.loading[key]
   }
 })
