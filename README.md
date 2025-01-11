@@ -2,7 +2,7 @@
 
 Ein einfacher Installer für Klipper auf deinem 3D-Drucker.
 
-## Installation
+## Installation auf Raspberry Pi
 
 1. Repository klonen:
 ```bash
@@ -10,15 +10,17 @@ git clone https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os.git
 cd Klipper-installer-innovate-os
 ```
 
-2. Abhängigkeiten installieren:
+2. Python-Umgebung einrichten:
 ```bash
-# System-Pakete installieren
+# Python und pip installieren
 sudo apt-get update
-sudo apt-get install -y python3-pip python3-venv nginx
+sudo apt-get install -y python3-pip python3-venv
 
-# Python-Umgebung einrichten
+# Virtuelle Umgebung erstellen und aktivieren
 python3 -m venv venv
 source venv/bin/activate
+
+# Abhängigkeiten installieren
 pip install -r requirements.txt
 ```
 
@@ -28,14 +30,18 @@ chmod +x start.sh
 ./start.sh
 ```
 
+4. Öffne im Browser:
+```
+http://raspberrypi.local:8000
+```
+oder
+```
+http://DEINE-PI-IP:8000
+```
+
 ## Verwendung
 
-1. Öffne im Browser:
-```
-http://localhost:8000
-```
-
-2. Folge dem Setup-Assistenten:
+1. Folge dem Setup-Assistenten:
    - Wähle deinen 3D-Drucker aus
    - Konfiguriere die Firmware
    - Starte die Installation
