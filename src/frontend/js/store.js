@@ -1,5 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
+import settings from './store/modules/settings'
+import websocket from './store/modules/websocket'
 
 export default createStore({
   state: {
@@ -10,11 +12,13 @@ export default createStore({
       message: ''
     },
     error: null,
+    success: null,
     printers: [],
     selectedPrinter: null,
     loading: {
       printers: false,
-      interfaces: false
+      interfaces: false,
+      installation: false
     }
   },
 
@@ -34,20 +38,40 @@ export default createStore({
     clearError(state) {
       state.error = null
     },
+    setSuccess(state, message) {
+      state.success = message
+    },
+    clearSuccess(state) {
+      state.success = null
+    },
     setPrinters(state, printers) {
       state.printers = printers
     },
     setSelectedPrinter(state, printer) {
       state.selectedPrinter = printer
     },
-    setLoading(state, { type, value }) {
-      state.loading[type] = value
+    setLoading(state, { key, value }) {
+      state.loading[key] = value
     }
   },
 
   actions: {
+    showError({ commit }, { message, details }) {
+      commit('setError', { message, details })
+      setTimeout(() => {
+        commit('clearError')
+      }, 5000)
+    },
+
+    showSuccess({ commit }, message) {
+      commit('setSuccess', message)
+      setTimeout(() => {
+        commit('clearSuccess')
+      }, 3000)
+    },
+
     async fetchPrinters({ commit }) {
-      commit('setLoading', { type: 'printers', value: true })
+      commit('setLoading', { key: 'printers', value: true })
       try {
         const response = await axios.get('/api/printers')
         commit('setPrinters', response.data)
@@ -57,7 +81,7 @@ export default createStore({
           details: error.message
         })
       } finally {
-        commit('setLoading', { type: 'printers', value: false })
+        commit('setLoading', { key: 'printers', value: false })
       }
     },
 
@@ -130,11 +154,16 @@ export default createStore({
     }
   },
 
+  modules: {
+    settings,
+    websocket
+  },
+
   getters: {
     installationProgress: state => state.installationStatus.progress,
     isInstalling: state => state.installationStatus.step !== null,
     availablePrinters: state => state.printers,
     selectedPrinterConfig: state => state.selectedPrinter?.config || null,
-    isLoading: state => type => state.loading[type]
+    isLoading: state => key => state.loading[key]
   }
 })

@@ -1,117 +1,65 @@
-# Klipper Installer Innovate OS
+# Klipper Installer für InnovateOS
 
-Eine benutzerfreundliche Webanwendung zur Installation und Verwaltung von Klipper auf 3D-Druckern.
+Ein einfacher Installer für Klipper auf deinem 3D-Drucker.
 
-## Features
+## Installation
 
-- Automatische Installation von Klipper und allen Abhängigkeiten
-- Unterstützung verschiedener Druckermodelle mit vorkonfigurierten Einstellungen
-- Einfacher Wechsel zwischen Fluidd und Mainsail Weboberflächen
-- Echtzeit-Fortschrittsanzeige und Logging
-- Benutzerfreundliche Weboberfläche
-
-## Entwicklung
-
-### Voraussetzungen
-
-- Node.js >= 18
-- Python >= 3.11
-- Docker (optional)
-
-### Installation für Entwicklung
-
+1. Lade das neueste Release herunter:
 ```bash
-# Clone das Repository
-git clone https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os.git
-cd Klipper-installer-innovate-os
-
-# Frontend-Abhängigkeiten installieren
-npm install
-
-# Backend-Abhängigkeiten installieren
-pip install -r requirements.txt
-
-# Frontend-Entwicklungsserver starten
-npm run dev
-
-# Backend-Entwicklungsserver starten
-uvicorn src.backend.main:app --reload --host 0.0.0.0 --port 8000
+wget https://github.com/your-username/Klipper-installer-innovate-os/releases/latest/download/klipper-installer.sh
 ```
 
-### Docker-Deployment
-
+2. Mache das Script ausführbar:
 ```bash
-# Build und Start mit Docker Compose
-docker-compose up --build
+chmod +x klipper-installer.sh
 ```
 
-Die Anwendung ist dann unter http://localhost verfügbar.
-
-## Projektstruktur
-
-```
-.
-├── config/                     # Druckerkonfigurationen
-│   ├── ender3/
-│   ├── voron_trident/
-│   └── ratrig_vcore3/
-├── src/
-│   ├── backend/               # Python Backend (FastAPI)
-│   │   ├── api/              # API-Routen
-│   │   ├── core/             # Kernfunktionen
-│   │   └── services/         # Dienste
-│   └── frontend/             # Vue.js Frontend
-│       ├── components/       # Vue-Komponenten
-│       ├── views/           # Seitenansichten
-│       └── js/              # JavaScript-Module
-├── tests/                    # Unit und Integration Tests
-└── docs/                    # Dokumentation
-
-## Entwicklung
-
-- Backend: FastAPI (Python)
-- Frontend: Vue.js mit Tailwind CSS
-- Datenbank: SQLite für lokale Konfigurationsspeicherung
-
-## Deployment
-
-Die Anwendung kann auf zwei Arten deployed werden:
-
-### 1. Docker (empfohlen)
-
+3. Führe den Installer aus:
 ```bash
-docker-compose up --build
+./klipper-installer.sh
 ```
 
-### 2. Manuelle Installation
+## Verwendung
 
-1. Frontend bauen:
+1. Öffne im Browser:
+```
+http://localhost:8000
+```
+
+2. Folge dem Setup-Assistenten:
+   - Wähle deinen 3D-Drucker aus
+   - Konfiguriere die Firmware
+   - Starte die Installation
+
+## Unterstützte Drucker
+
+- Ender 3 (alle Varianten)
+- Ratrig VCore 3
+- Voron 2.4
+- Voron Trident
+- (weitere folgen)
+
+## Probleme?
+
+### USB-Port nicht gefunden
 ```bash
-npm run build
+sudo usermod -a -G dialout $USER
+sudo reboot
 ```
 
-2. Nginx konfigurieren:
-- Kopiere die `nginx.conf` in `/etc/nginx/nginx.conf`
-- Kopiere den Build-Output aus `dist` nach `/var/www/html`
-
-3. Backend starten:
+### Dienst neu starten
 ```bash
-uvicorn src.backend.main:app --host 0.0.0.0 --port 8000
+sudo systemctl restart klipper
 ```
 
-## Konfiguration
+### Logs anzeigen
+```bash
+tail -f /var/log/klipper/klipper.log
+```
 
-### Neue Drucker hinzufügen
+## Support
 
-1. Erstelle einen neuen Ordner unter `config/` mit dem Druckernamen
-2. Füge `printer.cfg` und `firmware.config` hinzu
-3. Aktualisiere `printer_metadata.json` mit den Druckerinformationen
-
-### Umgebungsvariablen
-
-- `KLIPPER_INSTALLER_ENV`: Entwicklungsumgebung (development/production)
-- `LOG_LEVEL`: Logging-Level (DEBUG/INFO/WARNING/ERROR)
-
-## Lizenz
-
-MIT
+Bei Problemen oder Fragen:
+- Öffne ein Issue auf GitHub
+- Besuche unser [Forum](https://forum.innovate3d.de)
+- Discord: [Innovate3D Community](https://discord.gg/innovate3d)
