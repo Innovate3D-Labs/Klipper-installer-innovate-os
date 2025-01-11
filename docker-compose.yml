@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  klipper-installer:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    privileged: true  # Benötigt für Hardware-Zugriff
+    network_mode: "host"  # Benötigt für Druckerkommunikation
