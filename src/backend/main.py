@@ -41,7 +41,7 @@ async def serve_frontend(full_path: str):
     if full_path.startswith("api/"):
         return {"detail": "Not Found"}
     
-    index_path = DIST_DIR / "index.html"
+    index_path = DIST_DIR / "src" / "frontend" / "index.html"
     if not index_path.exists():
         return {"detail": f"Frontend not built. Please run 'npm run build' first. Expected path: {index_path}"}
     

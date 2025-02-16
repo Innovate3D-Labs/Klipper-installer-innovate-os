@@ -25,6 +25,9 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'src/frontend/index.html')
+      },
       output: {
         manualChunks: {
           'vendor': [
