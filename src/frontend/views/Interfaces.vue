@@ -7,7 +7,7 @@
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-2xl font-semibold">Fluidd</h2>
-          <img src="/images/fluidd-logo.png" alt="Fluidd Logo" class="h-12">
+          <img src="@images/fluidd-logo.png" alt="Fluidd Logo" class="h-12">
         </div>
         <p class="text-gray-600 mb-4">
           Moderne und intuitive Weboberfläche für Klipper mit Fokus auf Benutzerfreundlichkeit.
@@ -35,7 +35,7 @@
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-2xl font-semibold">Mainsail</h2>
-          <img src="/images/mainsail-logo.png" alt="Mainsail Logo" class="h-12">
+          <img src="@images/mainsail-logo.png" alt="Mainsail Logo" class="h-12">
         </div>
         <p class="text-gray-600 mb-4">
           Leistungsstarke Weboberfläche mit erweiterten Funktionen und Anpassungsmöglichkeiten.
