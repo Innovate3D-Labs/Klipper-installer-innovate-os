@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 from pathlib import Path
-from .api import printer_routes, install_routes, interface_routes
+from api import printer_routes, install_routes, interface_routes
 
 app = FastAPI(title="Klipper Installer API")
 
