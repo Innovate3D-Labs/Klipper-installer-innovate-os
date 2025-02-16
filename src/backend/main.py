@@ -25,6 +25,12 @@ app.include_router(printer_routes.router, prefix="/api/v1")
 app.include_router(install_routes.router, prefix="/api/v1")
 app.include_router(interface_routes.router, prefix="/api/v1")
 
+# Create dist directory if it doesn't exist
+if not DIST_DIR.exists():
+    DIST_DIR.mkdir(parents=True)
+if not (DIST_DIR / "assets").exists():
+    (DIST_DIR / "assets").mkdir(parents=True)
+
 # Serve static files from dist directory
 app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="static")
 
