@@ -32,7 +32,7 @@ if not (DIST_DIR / "assets").exists():
     (DIST_DIR / "assets").mkdir(parents=True)
 
 # Serve static files from dist directory
-app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="static")
+app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="static")
 
 # Serve index.html
 @app.get("/{full_path:path}")
