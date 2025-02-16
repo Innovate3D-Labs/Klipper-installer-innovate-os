@@ -2,13 +2,51 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true
+    })
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/frontend'),
       '@images': path.resolve(__dirname, './src/frontend/assets/images')
+    }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': [
+            'vue',
+            'vue-router',
+            'vuex',
+            'axios'
+          ],
+          'ui': [
+            '@headlessui/vue',
+            '@heroicons/vue'
+          ]
+        }
+      }
+    },
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
     }
   },
   server: {
@@ -20,16 +58,6 @@ export default defineConfig({
       '/ws': {
         target: 'ws://localhost:8000',
         ws: true
-      }
-    }
-  },
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: fileURLToPath(new URL('./src/frontend/index.html', import.meta.url))
       }
     }
   }
