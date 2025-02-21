@@ -200,7 +200,7 @@ export default createStore({
     async switchWebInterface({ commit }, webInterfaceName) {
       commit('setLoading', { key: 'interfaces', value: true })
       try {
-        const response = await axios.post('/api/v1/interface/switch', {
+        const response = await axios.post('/api/v1/interfaces/switch', {
           interface: webInterfaceName
         })
         commit('setCurrentWebInterface', webInterfaceName)
