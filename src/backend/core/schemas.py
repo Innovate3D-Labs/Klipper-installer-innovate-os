@@ -1,6 +1,16 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
 
+class USBPrinterResponse(BaseModel):
+    """Schema für erkannte USB-Drucker"""
+    id: str
+    name: str
+    port: str
+    description: Optional[str] = None
+    manufacturer: Optional[str] = None
+    hardware_id: Optional[str] = None
+    status: str
+
 class PrinterBase(BaseModel):
     """Basis-Schema für Drucker"""
     name: str = Field(..., description="Name des Druckers")

@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict
 from ..services.printer_config_manager import PrinterConfigManager
-from ..core.schemas import PrinterConfig, PrinterResponse, PrinterCreate, PrinterUpdate
+from ..core.schemas import PrinterConfig, PrinterResponse, PrinterCreate, PrinterUpdate, USBPrinterResponse
 
 router = APIRouter()
 config_manager = PrinterConfigManager()
 
-@router.get("/printers", response_model=List[PrinterResponse])
+@router.get("/printers", response_model=List[USBPrinterResponse])
 async def get_printers():
     """Gibt eine Liste aller verfügbaren Drucker zurück"""
     return config_manager.get_available_printers()
 
-@router.get("/printers/{printer_id}", response_model=PrinterResponse)
+@router.get("/printers/{printer_id}", response_model=USBPrinterResponse)
 async def get_printer(printer_id: str):
     """Holt die Details eines bestimmten Druckers"""
     printer = config_manager.get_printer_config(printer_id)
@@ -19,7 +19,7 @@ async def get_printer(printer_id: str):
         raise HTTPException(status_code=404, detail="Drucker nicht gefunden")
     return printer
 
-@router.post("/printers", response_model=PrinterResponse)
+@router.post("/printers", response_model=USBPrinterResponse)
 async def create_printer(printer: PrinterCreate):
     """Erstellt eine neue Druckerkonfiguration"""
     try:
@@ -35,7 +35,7 @@ async def create_printer(printer: PrinterCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Interner Server-Fehler: {str(e)}")
 
-@router.put("/printers/{printer_id}", response_model=PrinterResponse)
+@router.put("/printers/{printer_id}", response_model=USBPrinterResponse)
 async def update_printer(printer_id: str, printer: PrinterUpdate):
     """Aktualisiert eine bestehende Druckerkonfiguration"""
     try:
