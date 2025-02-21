@@ -1,51 +1,43 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
 from pathlib import Path
-from src.backend.api import printer_routes, install_routes, interface_routes
 
-app = FastAPI(title="Klipper Installer API")
+from src.backend.api import install_routes, printer_routes
 
-# Get the absolute path to the dist directory
-DIST_DIR = Path(__file__).parent.parent.parent / "dist"
+app = FastAPI()
 
-# CORS Middleware
+# CORS-Middleware hinzufügen
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(printer_routes.router, prefix="/api/v1")
+# API-Routen einbinden
 app.include_router(install_routes.router, prefix="/api/v1")
-app.include_router(interface_routes.router, prefix="/api/v1")
+app.include_router(printer_routes.router, prefix="/api/v1")
 
-# Create dist directory if it doesn't exist
-if not DIST_DIR.exists():
-    DIST_DIR.mkdir(parents=True)
-if not (DIST_DIR / "assets").exists():
-    (DIST_DIR / "assets").mkdir(parents=True)
+# Frontend-Dateien einbinden
+frontend_path = Path(__file__).parent.parent.parent / "frontend" / "dist"
+if frontend_path.exists():
+    app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
+else:
+    print(f"WARNUNG: Frontend-Verzeichnis nicht gefunden: {frontend_path}")
 
-# Serve static files from dist directory
-app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="static")
-
-# Serve index.html
-@app.get("/{full_path:path}")
-async def serve_frontend(full_path: str):
-    # Wenn die Anfrage mit /api beginnt, 404 zurückgeben
-    if full_path.startswith("api/"):
-        return {"detail": "Not Found"}
-    
-    index_path = DIST_DIR / "index.html"
-    if not index_path.exists():
-        return {"detail": f"Frontend not built. Please run 'npm run build' first. Expected path: {index_path}"}
-    
-    return FileResponse(str(index_path))
+# Debug-Route
+@app.get("/debug/paths")
+async def debug_paths():
+    """Debug-Route um Pfade zu überprüfen"""
+    return {
+        "current_file": __file__,
+        "frontend_path": str(frontend_path),
+        "frontend_exists": frontend_path.exists(),
+        "frontend_contents": os.listdir(str(frontend_path)) if frontend_path.exists() else None
+    }
 
 if __name__ == "__main__":
     import uvicorn

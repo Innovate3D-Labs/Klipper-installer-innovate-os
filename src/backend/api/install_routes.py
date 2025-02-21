@@ -1,8 +1,14 @@
+import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import Dict
+import os
+import asyncio
 from ..services.klipper_installer import KlipperInstaller
 from ..core.schemas import InstallationResponse
-import os
+
+# Logging konfigurieren
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 installer = KlipperInstaller()
@@ -18,27 +24,42 @@ async def install_klipper(printer_id: str, background_tasks: BackgroundTasks) ->
                 detail="Die Installation muss mit Root-Rechten ausgeführt werden"
             )
 
+        logger.debug("Starte Klipper-Installation...")
+
         # Klipper installieren
+        logger.debug("Installiere Klipper...")
         result = await installer.install_klipper()
         if result["status"] == "error":
+            logger.error(f"Klipper-Installation fehlgeschlagen: {result['message']}")
             raise HTTPException(status_code=500, detail=result["message"])
+        logger.debug("Klipper erfolgreich installiert")
 
-        # Firmware kompilieren (MCU-Typ wird automatisch erkannt)
+        # Firmware kompilieren
+        logger.debug("Kompiliere Firmware...")
         result = await installer.compile_firmware()
         if result["status"] == "error":
+            logger.error(f"Firmware-Kompilierung fehlgeschlagen: {result['message']}")
             raise HTTPException(status_code=500, detail=result["message"])
+        logger.debug("Firmware erfolgreich kompiliert")
 
         # Firmware flashen
+        logger.debug("Flashe Firmware...")
         result = await installer.flash_firmware("/dev/ttyUSB0")
         if result["status"] == "error":
+            logger.error(f"Firmware-Flash fehlgeschlagen: {result['message']}")
             raise HTTPException(status_code=500, detail=result["message"])
+        logger.debug("Firmware erfolgreich geflasht")
 
         # Klipper-Service einrichten
+        logger.debug("Richte Klipper-Service ein...")
         result = await installer.setup_klipper_service()
         if result["status"] == "error":
+            logger.error(f"Service-Einrichtung fehlgeschlagen: {result['message']}")
             raise HTTPException(status_code=500, detail=result["message"])
+        logger.debug("Klipper-Service erfolgreich eingerichtet")
 
         # Drucker-Konfiguration erstellen
+        logger.debug("Erstelle Drucker-Konfiguration...")
         config_data = {
             "serial_port": "/dev/ttyUSB0",
             "kinematics": "cartesian",
@@ -69,8 +90,13 @@ async def install_klipper(printer_id: str, background_tasks: BackgroundTasks) ->
         
         result = await installer.create_printer_config(config_data)
         if result["status"] == "error":
+            logger.error(f"Konfigurationserstellung fehlgeschlagen: {result['message']}")
             raise HTTPException(status_code=500, detail=result["message"])
+        logger.debug("Drucker-Konfiguration erfolgreich erstellt")
 
+        logger.debug("Installation erfolgreich abgeschlossen")
         return {"status": "success", "message": "Klipper wurde erfolgreich installiert"}
+
     except Exception as e:
+        logger.exception("Unerwarteter Fehler während der Installation")
         raise HTTPException(status_code=500, detail=str(e))
