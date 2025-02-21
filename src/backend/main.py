@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 from pathlib import Path
-from api import printer_routes, install_routes, interface_routes
+from src.backend.api import printer_routes, install_routes, interface_routes
 
 app = FastAPI(title="Klipper Installer API")
 
@@ -32,7 +32,7 @@ if not (DIST_DIR / "assets").exists():
     (DIST_DIR / "assets").mkdir(parents=True)
 
 # Serve static files from dist directory
-app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="static")
+app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="static")
 
 # Serve index.html
 @app.get("/{full_path:path}")
@@ -41,7 +41,7 @@ async def serve_frontend(full_path: str):
     if full_path.startswith("api/"):
         return {"detail": "Not Found"}
     
-    index_path = DIST_DIR / "src" / "frontend" / "index.html"
+    index_path = DIST_DIR / "index.html"
     if not index_path.exists():
         return {"detail": f"Frontend not built. Please run 'npm run build' first. Expected path: {index_path}"}
     
