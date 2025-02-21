@@ -9,6 +9,7 @@ setup(
         "uvicorn[standard]",
         "aiofiles",
         "python-multipart",
-        "pydantic"
+        "pydantic",
+        "pyserial"
     ],
 )

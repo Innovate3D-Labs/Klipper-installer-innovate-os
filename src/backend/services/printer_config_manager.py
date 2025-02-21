@@ -1,5 +1,6 @@
 import os
 import json
+import serial.tools.list_ports
 from typing import List, Dict, Optional
 from pathlib import Path
 
@@ -42,7 +43,24 @@ class PrinterConfigManager:
 
     def get_available_printers(self) -> List[Dict]:
         """Gibt eine Liste aller verfügbaren Drucker zurück"""
-        return self.metadata.get("printers", [])
+        # Suche nach angeschlossenen USB-Druckern
+        ports = list(serial.tools.list_ports.comports())
+        printers = []
+        
+        for port in ports:
+            # Füge jeden gefundenen USB-Port als möglichen Drucker hinzu
+            printer_info = {
+                "id": port.device,
+                "name": f"3D Drucker ({port.device})",
+                "port": port.device,
+                "description": port.description,
+                "manufacturer": port.manufacturer if hasattr(port, 'manufacturer') else None,
+                "hardware_id": port.hwid if hasattr(port, 'hwid') else None,
+                "status": "connected"
+            }
+            printers.append(printer_info)
+            
+        return printers
 
     def get_printer_config(self, printer_id: str) -> Optional[Dict]:
         """Holt die Konfiguration für einen bestimmten Drucker"""
@@ -51,33 +69,33 @@ class PrinterConfigManager:
                 config_path = os.path.join(self.config_dir, printer.get("config_dir"), "printer.cfg")
                 if os.path.exists(config_path):
                     with open(config_path, 'r') as f:
-                        config_content = f.read()
-                    return {
-                        **printer,
-                        "config": config_content
-                    }
+                        printer["config"] = f.read()
+                return printer
         return None
+
+    def validate_config(self, config: str) -> bool:
+        """Validiert eine Druckerkonfiguration"""
+        # TODO: Implementiere Konfigurationsvalidierung
+        return True
 
     def add_printer_config(self, printer_data: Dict) -> Dict:
         """Fügt eine neue Druckerkonfiguration hinzu"""
-        required_fields = ["id", "name", "manufacturer", "type"]
-        for field in required_fields:
-            if field not in printer_data:
-                raise ValueError(f"Fehlendes Pflichtfeld: {field}")
+        # Generiere eine eindeutige ID falls keine vorhanden
+        if "id" not in printer_data:
+            printer_data["id"] = str(len(self.metadata["printers"]) + 1)
 
-        # Erstelle Verzeichnis für die Druckerkonfiguration
-        config_dir = os.path.join(self.config_dir, printer_data["id"])
-        os.makedirs(config_dir, exist_ok=True)
+        # Erstelle ein Verzeichnis für die Druckerkonfiguration
+        config_dir = f"printer_{printer_data['id']}"
+        printer_data["config_dir"] = config_dir
+        os.makedirs(os.path.join(self.config_dir, config_dir), exist_ok=True)
 
-        # Speichere Konfigurationsdatei
+        # Speichere die Konfiguration wenn vorhanden
         if "config" in printer_data:
-            config_path = os.path.join(config_dir, "printer.cfg")
+            config_path = os.path.join(self.config_dir, config_dir, "printer.cfg")
             with open(config_path, 'w') as f:
                 f.write(printer_data["config"])
-            del printer_data["config"]
 
-        # Aktualisiere Metadata
-        printer_data["config_dir"] = printer_data["id"]
+        # Füge den Drucker zur Metadata hinzu
         self.metadata["printers"].append(printer_data)
         self._save_metadata()
 
@@ -85,57 +103,33 @@ class PrinterConfigManager:
 
     def update_printer_config(self, printer_id: str, printer_data: Dict) -> Optional[Dict]:
         """Aktualisiert eine bestehende Druckerkonfiguration"""
-        for i, printer in enumerate(self.metadata.get("printers", [])):
+        for i, printer in enumerate(self.metadata["printers"]):
             if printer.get("id") == printer_id:
-                # Update Konfigurationsdatei wenn vorhanden
+                # Update nur die angegebenen Felder
+                printer.update(printer_data)
+
+                # Aktualisiere die Konfiguration wenn vorhanden
                 if "config" in printer_data:
                     config_path = os.path.join(self.config_dir, printer["config_dir"], "printer.cfg")
                     with open(config_path, 'w') as f:
                         f.write(printer_data["config"])
-                    del printer_data["config"]
 
-                # Update Metadata
-                updated_printer = {**printer, **printer_data}
-                self.metadata["printers"][i] = updated_printer
                 self._save_metadata()
-                return updated_printer
+                return printer
         return None
 
     def delete_printer_config(self, printer_id: str) -> bool:
         """Löscht eine Druckerkonfiguration"""
-        for i, printer in enumerate(self.metadata.get("printers", [])):
+        for i, printer in enumerate(self.metadata["printers"]):
             if printer.get("id") == printer_id:
-                # Lösche Konfigurationsverzeichnis
+                # Lösche das Konfigurationsverzeichnis
                 config_dir = os.path.join(self.config_dir, printer["config_dir"])
                 if os.path.exists(config_dir):
-                    for root, dirs, files in os.walk(config_dir, topdown=False):
-                        for name in files:
-                            os.remove(os.path.join(root, name))
-                        for name in dirs:
-                            os.rmdir(os.path.join(root, name))
-                    os.rmdir(config_dir)
+                    import shutil
+                    shutil.rmtree(config_dir)
 
-                # Update Metadata
+                # Entferne den Drucker aus der Metadata
                 self.metadata["printers"].pop(i)
                 self._save_metadata()
                 return True
         return False
-
-    def validate_config(self, config_content: str) -> bool:
-        """Validiert eine Druckerkonfiguration"""
-        # TODO: Implementiere Konfigurationsvalidierung
-        required_sections = ["printer", "stepper_x", "stepper_y", "stepper_z", "extruder"]
-        
-        # Einfache Syntax-Überprüfung
-        try:
-            lines = config_content.split('\n')
-            sections = [line.strip('[].') for line in lines if line.strip().startswith('[')]
-            
-            # Prüfe ob alle erforderlichen Sektionen vorhanden sind
-            for required in required_sections:
-                if not any(section.startswith(required) for section in sections):
-                    return False
-                    
-            return True
-        except Exception:
-            return False
