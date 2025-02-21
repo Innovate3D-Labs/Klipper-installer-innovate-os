@@ -1,8 +1,24 @@
 # Klipper Installer für InnovateOS
 
-Ein einfacher Installer für Klipper auf deinem 3D-Drucker.
+Ein benutzerfreundlicher Installer für Klipper 3D-Drucker Firmware, entwickelt für InnovateOS.
 
-## Installation auf Raspberry Pi
+## Features
+
+- 🔍 Automatische USB-Drucker Erkennung
+- 🛠️ Einfache Klipper Installation
+- ⚙️ Automatische Firmware-Kompilierung
+- 📱 Moderne Web-Oberfläche
+- 🔄 Echtzeit-Installation-Status
+- 📊 Detaillierte Fortschrittsanzeige
+
+## Systemanforderungen
+
+- Python 3.11+
+- Node.js 18+
+- Linux/Raspberry Pi OS
+- Git
+
+## Installation
 
 1. Repository klonen:
 ```bash
@@ -10,77 +26,58 @@ git clone https://github.com/Innovate3D-Labs/Klipper-installer-innovate-os.git
 cd Klipper-installer-innovate-os
 ```
 
-2. Python-Umgebung einrichten:
+2. Python-Abhängigkeiten installieren:
 ```bash
-# Python und pip installieren
-sudo apt-get update
-sudo apt-get install -y python3-pip python3-venv
-
-# Virtuelle Umgebung erstellen und aktivieren
-python3 -m venv venv
-source venv/bin/activate
-
-# Abhängigkeiten installieren
+python -m venv venv
+source venv/bin/activate  # Unter Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Installer starten:
+3. Frontend-Abhängigkeiten installieren:
 ```bash
-chmod +x start.sh
-./start.sh
+cd src/frontend
+npm install
 ```
 
-4. Öffne im Browser:
-```
-http://raspberrypi.local:8000
-```
-oder
-```
-http://DEINE-PI-IP:8000
+## Entwicklung
+
+1. Backend-Server starten:
+```bash
+python -m uvicorn src.backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Verwendung
+2. Frontend-Development-Server starten:
+```bash
+cd src/frontend
+npm run dev
+```
 
-1. Folge dem Setup-Assistenten:
-   - Wähle deinen 3D-Drucker aus
-   - Konfiguriere die Firmware
-   - Starte die Installation
+## Produktions-Build
+
+1. Frontend bauen:
+```bash
+cd src/frontend
+npm run build
+```
+
+2. Backend-Server starten:
+```bash
+python -m uvicorn src.backend.main:app --host 0.0.0.0 --port 8000
+```
 
 ## Unterstützte Drucker
 
-- Ender 3 (alle Varianten)
-- Ratrig VCore 3
-- Voron 2.4
-- Voron Trident
-- (weitere folgen)
+- Alle Drucker mit RAMPS 1.4 Board
+- Weitere Boards werden in zukünftigen Updates hinzugefügt
 
-## Probleme?
+## Lizenz
 
-### Python-Fehler oder "command not found"
-```bash
-# Aktiviere die Python-Umgebung
-source venv/bin/activate
-```
+MIT License
 
-### USB-Port nicht gefunden
-```bash
-sudo usermod -a -G dialout $USER
-sudo reboot
-```
+## Beitragen
 
-### Dienst neu starten
-```bash
-sudo systemctl restart klipper
-```
-
-### Logs anzeigen
-```bash
-tail -f /var/log/klipper/klipper.log
-```
-
-## Support
-
-Bei Problemen oder Fragen:
-- Öffne ein Issue auf GitHub
-- Besuche unser [Forum](https://forum.innovate3d.de)
-- Discord: [Innovate3D Community](https://discord.gg/innovate3d)
+1. Fork das Repository
+2. Erstelle einen Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Committe deine Änderungen (`git commit -m 'Add some AmazingFeature'`)
+4. Push zum Branch (`git push origin feature/AmazingFeature`)
+5. Öffne einen Pull Request

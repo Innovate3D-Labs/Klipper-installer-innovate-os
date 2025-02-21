@@ -66,6 +66,12 @@ class FirmwareConfig(BaseModel):
     content: str = Field(..., description="Inhalt der Firmware-Konfiguration")
     mcu_type: str = Field(..., description="Typ des Mikrocontrollers")
 
+class InstallationResponse(BaseModel):
+    """Modell für die Antwort bei der Installation"""
+    status: str = Field(..., description="Status der Installation (success/error)")
+    message: str = Field(..., description="Statusmeldung")
+    config_path: Optional[str] = Field(None, description="Pfad zur Konfigurationsdatei")
+
 class WebInterfaceResponse(BaseModel):
     """Modell für die Antwort bei Webinterface-Abfragen"""
     current_interface: str = Field(..., description="Aktuell aktives Webinterface")
