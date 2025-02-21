@@ -13,8 +13,9 @@ export default defineConfig({
       '@images': path.resolve(__dirname, './src/frontend/assets/images')
     }
   },
+  root: path.resolve(__dirname, 'src/frontend'),
   build: {
-    outDir: 'dist',
+    outDir: '../../dist',
     assetsDir: 'assets',
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
