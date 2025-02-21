@@ -3,6 +3,10 @@ import { createStore } from 'vuex'
 import router from './router'
 import App from './App.vue'
 import './assets/main.css'
+import './style.css'  // Füge globales CSS hinzu
+
+// Font Awesome
+import '@fortawesome/fontawesome-free/css/all.css'
 
 // Vuex Store
 const store = createStore({
@@ -35,7 +39,7 @@ const store = createStore({
         const data = await response.json()
         commit('setPrinters', data)
       } catch (error) {
-        console.error('Fehler beim Laden der Drucker:', error)
+        console.error('Error fetching printers:', error)
       }
     }
   }
