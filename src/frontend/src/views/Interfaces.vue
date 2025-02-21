@@ -5,7 +5,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- Fluidd -->
       <div class="card hover:shadow-lg transition-shadow duration-300">
-        <img src="../assets/images/fluidd-logo.svg" alt="Fluidd Logo" class="h-20 mx-auto mb-4">
+        <div class="h-20 mx-auto mb-4 flex items-center justify-center">
+          <div class="w-20 h-20 bg-primary-600 rounded-lg flex items-center justify-center">
+            <span class="text-white text-xl font-bold">Fluidd</span>
+          </div>
+        </div>
         <h2 class="text-2xl font-semibold text-center mb-4">Fluidd</h2>
         <p class="text-gray-600 mb-6">
           Eine moderne, responsive Benutzeroberfläche für Klipper mit vielen Features und einfacher Bedienung.
@@ -17,7 +21,11 @@
 
       <!-- Mainsail -->
       <div class="card hover:shadow-lg transition-shadow duration-300">
-        <img src="../assets/images/mainsail-logo.svg" alt="Mainsail Logo" class="h-20 mx-auto mb-4">
+        <div class="h-20 mx-auto mb-4 flex items-center justify-center">
+          <div class="w-20 h-20 bg-primary-700 rounded-lg flex items-center justify-center">
+            <span class="text-white text-xl font-bold">Mainsail</span>
+          </div>
+        </div>
         <h2 class="text-2xl font-semibold text-center mb-4">Mainsail</h2>
         <p class="text-gray-600 mb-6">
           Eine leistungsstarke und anpassbare Benutzeroberfläche mit umfangreichen Konfigurationsmöglichkeiten.
