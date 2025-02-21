@@ -22,7 +22,7 @@ app.include_router(install_routes.router, prefix="/api/v1")
 app.include_router(printer_routes.router, prefix="/api/v1")
 
 # Frontend-Dateien einbinden
-frontend_path = Path(__file__).parent.parent.parent / "frontend" / "dist"
+frontend_path = Path(__file__).parent.parent.parent / "src" / "frontend" / "dist"
 if frontend_path.exists():
     app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
 else:
