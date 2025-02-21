@@ -3,18 +3,20 @@ import subprocess
 import logging
 import asyncio
 from typing import Optional
+from pathlib import Path
 
 class InterfaceManager:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.current_interface: Optional[str] = None
+        self.home_dir = str(Path.home())
         self._check_current_interface()
 
     def _check_current_interface(self):
         """Überprüft, welche Weboberfläche aktuell installiert ist"""
-        if os.path.exists("/home/pi/fluidd"):
+        if os.path.exists(os.path.join(self.home_dir, "fluidd")):
             self.current_interface = "fluidd"
-        elif os.path.exists("/home/pi/mainsail"):
+        elif os.path.exists(os.path.join(self.home_dir, "mainsail")):
             self.current_interface = "mainsail"
 
     async def install_fluidd(self):
@@ -23,14 +25,14 @@ class InterfaceManager:
             commands = [
                 "sudo apt-get update",
                 "sudo apt-get install -y nginx",
-                "cd /home/pi",
+                f"cd {self.home_dir}",
                 "rm -rf fluidd",
                 "mkdir fluidd",
                 "cd fluidd",
                 "wget -q -O fluidd.zip https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip",
                 "unzip fluidd.zip",
                 "rm fluidd.zip",
-                "sudo ln -sf /home/pi/fluidd /var/www/fluidd"
+                f"sudo ln -sf {self.home_dir}/fluidd /var/www/fluidd"
             ]
             
             for cmd in commands:
@@ -85,15 +87,18 @@ server {
     }
 }
 """
-            with open("/etc/nginx/sites-available/fluidd", "w") as f:
+            
+            # Nginx-Konfiguration speichern und aktivieren
+            config_path = "/etc/nginx/sites-available/fluidd"
+            with open(config_path, "w") as f:
                 f.write(nginx_config)
             
-            os.symlink("/etc/nginx/sites-available/fluidd", "/etc/nginx/sites-enabled/fluidd")
-            subprocess.run(["sudo", "nginx", "-s", "reload"])
+            os.symlink(config_path, "/etc/nginx/sites-enabled/fluidd")
+            subprocess.run(["sudo", "nginx", "-t"])
+            subprocess.run(["sudo", "systemctl", "restart", "nginx"])
             
             self.current_interface = "fluidd"
             return True
-            
         except Exception as e:
             self.logger.error(f"Fehler bei der Fluidd-Installation: {str(e)}")
             raise
@@ -104,14 +109,14 @@ server {
             commands = [
                 "sudo apt-get update",
                 "sudo apt-get install -y nginx",
-                "cd /home/pi",
+                f"cd {self.home_dir}",
                 "rm -rf mainsail",
                 "mkdir mainsail",
                 "cd mainsail",
                 "wget -q -O mainsail.zip https://github.com/mainsail-crew/mainsail/releases/latest/download/mainsail.zip",
                 "unzip mainsail.zip",
                 "rm mainsail.zip",
-                "sudo ln -sf /home/pi/mainsail /var/www/mainsail"
+                f"sudo ln -sf {self.home_dir}/mainsail /var/www/mainsail"
             ]
             
             for cmd in commands:
@@ -166,15 +171,18 @@ server {
     }
 }
 """
-            with open("/etc/nginx/sites-available/mainsail", "w") as f:
+            
+            # Nginx-Konfiguration speichern und aktivieren
+            config_path = "/etc/nginx/sites-available/mainsail"
+            with open(config_path, "w") as f:
                 f.write(nginx_config)
             
-            os.symlink("/etc/nginx/sites-available/mainsail", "/etc/nginx/sites-enabled/mainsail")
-            subprocess.run(["sudo", "nginx", "-s", "reload"])
+            os.symlink(config_path, "/etc/nginx/sites-enabled/mainsail")
+            subprocess.run(["sudo", "nginx", "-t"])
+            subprocess.run(["sudo", "systemctl", "restart", "nginx"])
             
             self.current_interface = "mainsail"
             return True
-            
         except Exception as e:
             self.logger.error(f"Fehler bei der Mainsail-Installation: {str(e)}")
             raise
