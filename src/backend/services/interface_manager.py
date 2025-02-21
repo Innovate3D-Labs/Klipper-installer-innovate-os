@@ -1,6 +1,7 @@
 import os
 import subprocess
 import logging
+import asyncio
 from typing import Optional
 
 class InterfaceManager:
