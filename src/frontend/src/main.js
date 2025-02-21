@@ -1,30 +1,8 @@
 import { createApp } from 'vue'
 import { createStore } from 'vuex'
-import { createRouter, createWebHistory } from 'vue-router'
+import router from './router'
 import App from './App.vue'
 import './assets/main.css'
-
-// Router-Konfiguration
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      name: 'Home',
-      component: () => import('./views/Home.vue')
-    },
-    {
-      path: '/printers',
-      name: 'PrinterList',
-      component: () => import('./views/PrinterList.vue')
-    },
-    {
-      path: '/install/:id',
-      name: 'PrinterInstall',
-      component: () => import('./views/PrinterInstall.vue')
-    }
-  ]
-})
 
 // Vuex Store
 const store = createStore({
@@ -32,7 +10,8 @@ const store = createStore({
     return {
       printers: [],
       selectedPrinter: null,
-      installationStatus: null
+      installationStatus: null,
+      selectedInterface: null
     }
   },
   mutations: {
@@ -44,6 +23,9 @@ const store = createStore({
     },
     setInstallationStatus(state, status) {
       state.installationStatus = status
+    },
+    setSelectedInterface(state, interface_type) {
+      state.selectedInterface = interface_type
     }
   },
   actions: {
