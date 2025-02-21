@@ -5,17 +5,35 @@ from typing import Dict, Optional, List
 from pathlib import Path
 
 class KlipperInstaller:
-    def __init__(self, config_dir: str = "/home/pi/printer_data/config"):
-        self.config_dir = config_dir
-        self.klipper_dir = "/home/pi/klipper"
+    def __init__(self, base_dir: str = None):
+        # Basis-Verzeichnis dynamisch ermitteln
+        if base_dir is None:
+            if os.getuid() == 0:  # Root-Benutzer
+                base_dir = "/root"
+            else:
+                base_dir = str(Path.home())
+
+        # Verzeichnisse konfigurieren
+        self.base_dir = base_dir
+        self.config_dir = os.path.join(self.base_dir, "printer_data/config")
+        self.klipper_dir = os.path.join(self.base_dir, "klipper")
         self.firmware_dir = os.path.join(self.klipper_dir, "out")
+        
+        # Erstelle notwendige Verzeichnisse
+        os.makedirs(self.config_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.base_dir, "printer_data/logs"), exist_ok=True)
 
     async def install_klipper(self) -> Dict[str, str]:
         """Installiert Klipper und seine Abhängigkeiten"""
         try:
             # Klipper Repository klonen
             if not os.path.exists(self.klipper_dir):
-                await self._run_command("git clone https://github.com/Klipper3d/klipper.git")
+                await self._run_command(f"git clone https://github.com/Klipper3d/klipper.git {self.klipper_dir}")
+
+            # Python-Umgebung erstellen
+            venv_dir = os.path.join(self.base_dir, "klippy-env")
+            if not os.path.exists(venv_dir):
+                await self._run_command(f"python3 -m venv {venv_dir}")
 
             # Abhängigkeiten installieren
             install_script = os.path.join(self.klipper_dir, "scripts/install-debian.sh")
@@ -25,9 +43,15 @@ class KlipperInstaller:
         except Exception as e:
             return {"status": "error", "message": f"Fehler bei der Klipper-Installation: {str(e)}"}
 
-    async def compile_firmware(self, mcu_type: str, processor: str) -> Dict[str, str]:
+    async def compile_firmware(self, mcu_type: str = None, processor: str = None) -> Dict[str, str]:
         """Kompiliert die Klipper-Firmware für den spezifizierten MCU"""
         try:
+            # MCU-Typ basierend auf USB-ID bestimmen
+            if mcu_type is None:
+                # CH340 (1A86:7523) -> Meist Arduino Mega/RAMPS
+                mcu_type = "atmega2560"
+                processor = "AVR"
+
             # Konfigurationsdatei erstellen
             config = f"""CONFIG_LOW_LEVEL_OPTIONS=y
 CONFIG_MACH_{processor.upper()}=y
@@ -41,23 +65,33 @@ CONFIG_{mcu_type.upper()}=y
             await self._run_command("make clean", cwd=self.klipper_dir)
             await self._run_command("make", cwd=self.klipper_dir)
 
-            if not os.path.exists(os.path.join(self.firmware_dir, "klipper.bin")):
+            if not os.path.exists(os.path.join(self.firmware_dir, "klipper.elf.hex")):
                 raise Exception("Firmware-Kompilierung fehlgeschlagen")
 
             return {"status": "success", "message": "Firmware wurde erfolgreich kompiliert"}
         except Exception as e:
             return {"status": "error", "message": f"Fehler bei der Firmware-Kompilierung: {str(e)}"}
 
-    async def flash_firmware(self, port: str, mcu_type: str) -> Dict[str, str]:
+    async def flash_firmware(self, port: str, mcu_type: str = None) -> Dict[str, str]:
         """Flasht die kompilierte Firmware auf den MCU"""
         try:
+            if mcu_type is None:
+                mcu_type = "atmega2560"  # Standard für CH340
+
+            # Stelle sicher, dass der Port existiert
+            if not os.path.exists(port):
+                raise Exception(f"Port {port} nicht gefunden")
+
+            # Stelle sicher, dass die Firmware existiert
+            firmware_path = os.path.join(self.firmware_dir, "klipper.elf.hex")
+            if not os.path.exists(firmware_path):
+                raise Exception("Firmware-Datei nicht gefunden")
+
+            # Flash-Befehl basierend auf MCU-Typ
             flash_cmd = ""
             if mcu_type == "atmega2560":
-                flash_cmd = f"avrdude -p atmega2560 -c wiring -P {port} -U flash:w:{self.firmware_dir}/klipper.elf.hex:i"
-            elif mcu_type == "atmega1284p":
-                flash_cmd = f"avrdude -p atmega1284p -c arduino -P {port} -U flash:w:{self.firmware_dir}/klipper.elf.hex:i"
-            elif mcu_type == "stm32":
-                flash_cmd = f"dfu-util -d 0483:df11 -a 0 -R -D {self.firmware_dir}/klipper.bin"
+                await self._run_command("apt-get install -y avrdude")
+                flash_cmd = f"avrdude -p atmega2560 -c wiring -P {port} -U flash:w:{firmware_path}:i -D"
             else:
                 raise Exception(f"Nicht unterstützter MCU-Typ: {mcu_type}")
 
@@ -69,24 +103,29 @@ CONFIG_{mcu_type.upper()}=y
     async def setup_klipper_service(self) -> Dict[str, str]:
         """Richtet den Klipper-Service ein"""
         try:
-            service_file = """[Unit]
+            venv_dir = os.path.join(self.base_dir, "klippy-env")
+            service_file = f"""[Unit]
 Description=Klipper 3D Printer Firmware
 After=network.target
+
 [Service]
 Type=simple
-User=pi
+User={os.environ.get('SUDO_USER', os.getlogin())}
 RemainAfterExit=yes
-ExecStart=/home/pi/klippy-env/bin/python /home/pi/klipper/klippy/klippy.py /home/pi/printer_data/config/printer.cfg -l /home/pi/printer_data/logs/klippy.log
+ExecStart={venv_dir}/bin/python {self.klipper_dir}/klippy/klippy.py {self.config_dir}/printer.cfg -l {self.base_dir}/printer_data/logs/klippy.log
 Restart=always
 RestartSec=10
+
 [Install]
 WantedBy=multi-user.target
 """
             # Service-Datei erstellen
-            with open("/etc/systemd/system/klipper.service", "w") as f:
+            service_path = "/etc/systemd/system/klipper.service"
+            with open(service_path, "w") as f:
                 f.write(service_file)
 
             # Service aktivieren und starten
+            await self._run_command("systemctl daemon-reload")
             await self._run_command("systemctl enable klipper")
             await self._run_command("systemctl start klipper")
 
@@ -208,7 +247,6 @@ gcode:
     CANCEL_PRINT_BASE
 """
             # Konfigurationsdatei speichern
-            os.makedirs(self.config_dir, exist_ok=True)
             config_path = os.path.join(self.config_dir, "printer.cfg")
             with open(config_path, "w") as f:
                 f.write(config_template)
@@ -221,8 +259,8 @@ gcode:
         except Exception as e:
             return {"status": "error", "message": f"Fehler beim Erstellen der Konfiguration: {str(e)}"}
 
-    async def _run_command(self, cmd: str, cwd: Optional[str] = None) -> str:
-        """Führt einen Shell-Befehl aus"""
+    async def _run_command(self, cmd: str, cwd: str = None) -> str:
+        """Führt einen Shell-Befehl aus und gibt die Ausgabe zurück"""
         process = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.PIPE,

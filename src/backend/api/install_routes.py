@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import Dict
 from ..services.klipper_installer import KlipperInstaller
 from ..core.schemas import InstallationResponse
+import os
 
 router = APIRouter()
 installer = KlipperInstaller()
@@ -10,23 +11,25 @@ installer = KlipperInstaller()
 async def install_klipper(printer_id: str, background_tasks: BackgroundTasks) -> Dict[str, str]:
     """Startet die Klipper-Installation für einen bestimmten Drucker"""
     try:
+        # Prüfe Root-Rechte
+        if os.getuid() != 0:
+            raise HTTPException(
+                status_code=403,
+                detail="Die Installation muss mit Root-Rechten ausgeführt werden"
+            )
+
         # Klipper installieren
         result = await installer.install_klipper()
         if result["status"] == "error":
             raise HTTPException(status_code=500, detail=result["message"])
 
-        # MCU-Typ basierend auf Hardware-ID bestimmen
-        # TODO: Implementiere MCU-Erkennung basierend auf VID:PID
-        mcu_type = "atmega2560"  # Standard für viele 3D-Drucker
-        processor = "AVR"
-
-        # Firmware kompilieren
-        result = await installer.compile_firmware(mcu_type, processor)
+        # Firmware kompilieren (MCU-Typ wird automatisch erkannt)
+        result = await installer.compile_firmware()
         if result["status"] == "error":
             raise HTTPException(status_code=500, detail=result["message"])
 
         # Firmware flashen
-        result = await installer.flash_firmware(f"/dev/ttyUSB0", mcu_type)
+        result = await installer.flash_firmware("/dev/ttyUSB0")
         if result["status"] == "error":
             raise HTTPException(status_code=500, detail=result["message"])
 
@@ -60,23 +63,14 @@ async def install_klipper(printer_id: str, background_tasks: BackgroundTasks) ->
             "e_dir_pin": "ar28",
             "e_enable_pin": "ar24",
             "heater_pin": "ar10",
-            "temp_sensor_pin": "analog13",
-            "bed_heater_pin": "ar8",
-            "bed_sensor_pin": "analog14",
             "fan_pin": "ar9",
-            "display_cs_pin": "ar16",
-            "display_sclk_pin": "ar23",
-            "display_sid_pin": "ar17"
+            "temp_pin": "analog1"
         }
+        
         result = await installer.create_printer_config(config_data)
         if result["status"] == "error":
             raise HTTPException(status_code=500, detail=result["message"])
 
-        return {
-            "status": "success",
-            "message": "Klipper wurde erfolgreich installiert und konfiguriert",
-            "config_path": result.get("config_path")
-        }
-
+        return {"status": "success", "message": "Klipper wurde erfolgreich installiert"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
